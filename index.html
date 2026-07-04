@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#1f2937" />
+  <title>空とからだ</title>
+  <style>
+    :root {
+      --bg: #f5f3ef;
+      --card: #ffffff;
+      --ink: #27303a;
+      --sub: #66717d;
+      --line: #e5e1da;
+      --accent: #65758a;
+      --soft: #edf0f3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+        "Yu Gothic", sans-serif;
+    }
+
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 22px 16px 48px;
+    }
+
+    h1 {
+      margin: 4px 0 2px;
+      font-size: 28px;
+      letter-spacing: .04em;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--sub);
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    button, select, textarea {
+      font: inherit;
+    }
+
+    .tab, .save {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--ink);
+      padding: 11px 8px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+
+    .card {
+      margin: 12px 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+    }
+
+    .date {
+      color: var(--sub);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .weather-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+    }
+
+    .weather-name {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .temp {
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--soft);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--sub);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .metric strong {
+      font-size: 16px;
+    }
+
+    .reading {
+      margin-top: 16px;
+      padding-top: 15px;
+      border-top: 1px solid var(--line);
+      color: #4d5865;
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-size: 14px;
+      color: var(--sub);
+    }
+
+    select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 11px;
+      color: var(--ink);
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .checks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .checks label {
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .checks input {
+      margin-right: 4px;
+    }
+
+    .save {
+      width: 100%;
+      margin-top: 16px;
+      background: var(--ink);
+      border-color: var(--ink);
+      color: white;
+      font-weight: 700;
+    }
+
+    .status {
+      min-height: 1.5em;
+      margin: 10px 0 0;
+      color: var(--sub);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .small {
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .error {
+      color: #a34b4b;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>空とからだ</h1>
+    <p class="subtitle">仙台の空模様と、その日の自分を並べておく場所。</p>
+
+    <section class="tabs">
+      <button class="tab" data-offset="-1">昨日</button>
+      <button class="tab active" data-offset="0">今日</button>
+      <button class="tab" data-offset="1">明日</button>
+    </section>
+
+    <section class="card" id="weatherCard">
+      <div id="weatherLoading">空を読んでいるところ…</div>
+    </section>
+
+    <section class="card">
+      <h2>からだの記録</h2>
+
+      <label for="condition">全体の調子</label>
+      <select id="condition">
+        <option value="">選ぶ</option>
+        <option>かなり元気</option>
+        <option>まあまあ</option>
+        <option>少ししんどい</option>
+        <option>しんどい</option>
+        <option>休みたい</option>
+      </select>
+
+      <label>気になること</label>
+      <div class="checks">
+        <label><input type="checkbox" value="頭痛">頭痛</label>
+        <label><input type="checkbox" value="だるさ">だるさ</label>
+        <label><input type="checkbox" value="眠気">眠気</label>
+        <label><input type="checkbox" value="肩こり">肩こり</label>
+        <label><input type="checkbox" value="気分の揺れ">気分の揺れ</label>
+      </div>
+
+      <label for="memo">ひとこと</label>
+      <textarea id="memo" placeholder="たとえば、雨の前で頭が重い。仕事終わりは少し楽。"></textarea>
+
+      <button class="save" id="saveButton">この日の記録を保存</button>
+      <p class="status" id="saveStatus"></p>
+    </section>
+
+    <p class="small">
+      記録はこのスマホのブラウザ内に保存されます。診断ではなく、
+      自分の調子と空の様子を見返すための小さな記録です。
+    </p>
+  </main>
+
+  <script>
+    const SENDAI = {
+      name: "仙台",
+      latitude: 38.2682,
+      longitude: 140.8694
+    };
+
+    let selectedOffset = 0;
+    let weatherData = null;
+
+    const weatherCard = document.getElementById("weatherCard");
+    const condition = document.getElementById("condition");
+    const memo = document.getElementById("memo");
+    const saveStatus = document.getElementById("saveStatus");
+
+    function dateForOffset(offset) {
+      const d = new Date();
+      d.setHours(12, 0, 0, 0);
+      d.setDate(d.getDate() + offset);
+      return d;
+    }
+
+    function dateKey(offset = selectedOffset) {
+      const d = dateForOffset(offset);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function formatDate(date) {
+      return new Intl.DateTimeFormat("ja-JP", {
+        month: "long",
+        day: "numeric",
+        weekday: "short"
+      }).format(date);
+    }
+
+    function weatherText(code) {
+      const map = {
+        0: "晴れ",
+        1: "おおむね晴れ",
+        2: "晴れ時々くもり",
+        3: "くもり",
+        45: "霧",
+        48: "霧氷",
+        51: "弱い霧雨",
+        53: "霧雨",
+        55: "強い霧雨",
+        61: "弱い雨",
+        63: "雨",
+        65: "強い雨",
+        71: "弱い雪",
+        73: "雪",
+        75: "強い雪",
+        80: "にわか雨",
+        81: "にわか雨",
+        82: "強いにわか雨",
+        95: "雷雨"
+      };
+      return map[code] ?? "空模様を確認中";
+    }
+
+    function moonPhase(date) {
+      const knownNewMoon = new Date("2000-01-06T18:14:00Z");
+      const days = (date - knownNewMoon) / 86400000;
+      const phase = ((days % 29.53058867) + 29.53058867) % 29.53058867;
+      const age = Math.round(phase * 10) / 10;
+
+      let name = "新月";
+      if (phase < 1.85) name = "新月";
+      else if (phase < 7.38) name = "満ちていく月";
+      else if (phase < 9.23) name = "上弦の月";
+      else if (phase < 14.77) name = "満ちていく月";
+      else if (phase < 16.61) name = "満月";
+      else if (phase < 22.15) name = "欠けていく月";
+      else if (phase < 24.0) name = "下弦の月";
+      else name = "欠けていく月";
+
+      return `${name}（月齢 ${age}）`;
+    }
+
+    function average(numbers) {
+      if (!numbers.length) return null;
+      return numbers.reduce((a, b) => a + b, 0) / numbers.length;
+    }
+
+    function selectedChecks() {
+      return [...document.querySelectorAll('.checks input:checked')]
+        .map(input => input.value);
+    }
+
+    function loadRecord() {
+      const raw = localStorage.getItem(`skyBody-${dateKey()}`);
+      const record = raw ? JSON.parse(raw) : {};
+
+      condition.value = record.condition || "";
+      memo.value = record.memo || "";
+
+      document.querySelectorAll('.checks input').forEach(input => {
+        input.checked = (record.symptoms || []).includes(input.value);
+      });
+
+      saveStatus.textContent = raw ? "この日の保存済み記録を読み込みました。" : "";
+    }
+
+    function saveRecord() {
+      const record = {
+        condition: condition.value,
+        symptoms: selectedChecks(),
+        memo: memo.value.trim(),
+        savedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem(`skyBody-${dateKey()}`, JSON.stringify(record));
+      saveStatus.textContent = "保存した。あとで空と一緒に読み返せる。";
+    }
+
+    function makeReading(temp, humidity, pressureChange, moon) {
+      const pressureWord =
+        pressureChange === null ? "気圧の流れはまだ読み込み中。" :
+        pressureChange <= -3 ? "気圧は下がり気味。" :
+        pressureChange >= 3 ? "気圧は上がり気味。" :
+        "気圧は大きくは動いていないみたい。";
+
+      const humidityWord =
+        humidity >= 75 ? "湿度は高めで、空気はしっとり。" :
+        humidity <= 40 ? "湿度は低めで、空気は乾き気味。" :
+        "湿度はほどよいあたり。";
+
+      return `${pressureWord} ${humidityWord} 気温は${Math.round(temp)}℃。月は${moon}。`;
+    }
+
+    function renderWeather() {
+      if (!weatherData) return;
+
+      const key = dateKey();
+      const dailyIndex = weatherData.daily.time.indexOf(key);
+
+      if (dailyIndex === -1) {
+        weatherCard.innerHTML = '<p class="error">この日の空模様はまだ取れなかった。少し時間をおいて更新してみて。</p>';
+        return;
+      }
+
+      const hours = weatherData.hourly.time
+        .map((time, i) => ({ time, i }))
+        .filter(item => item.time.startsWith(key));
+
+      const humidities = hours
+        .map(item => weatherData.hourly.relative_humidity_2m[item.i])
+        .filter(v => Number.isFinite(v));
+
+      const pressures = hours
+        .map(item => weatherData.hourly.surface_pressure[item.i])
+        .filter(v => Number.isFinite(v));
+
+      const early = pressures.slice(0, 6);
+      const late = pressures.slice(-6);
+
+      const humidity = average(humidities);
+      const pressure = average(pressures);
+      const pressureChange =
+        early.length && late.length ? average(late) - average(early) : null;
+
+      const max = weatherData.daily.temperature_2m_max[dailyIndex];
+      const min = weatherData.daily.temperature_2m_min[dailyIndex];
+      const code = weatherData.daily.weather_code[dailyIndex];
+      const moon = moonPhase(dateForOffset(selectedOffset));
+
+      const changeText = pressureChange === null
+        ? "—"
+        : `${pressureChange > 0 ? "+" : ""}${pressureChange.toFixed(1)} hPa`;
+
+      weatherCard.innerHTML = `
+        <div class="date">${SENDAI.name}・${formatDate(dateForOffset(selectedOffset))}</div>
+        <div class="weather-main">
+          <div class="weather-name">${weatherText(code)}</div>
+          <div class="temp">${Math.round(max)}°</div>
+        </div>
+        <div class="grid">
+          <div class="metric"><span>最低気温</span><strong>${Math.round(min)}℃</strong></div>
+          <div class="metric"><span>平均湿度</span><strong>${humidity ? Math.round(humidity) + "%" : "—"}</strong></div>
+          <div class="metric"><span>平均気圧</span><strong>${pressure ? pressure.toFixed(1) + " hPa" : "—"}</strong></div>
+          <div class="metric"><span>朝から夜への気圧変化</span><strong>${changeText}</strong></div>
+          <div class="metric"><span>月</span><strong>${moon}</strong></div>
+          <div class="metric"><span>気温の幅</span><strong>${Math.round(min)}〜${Math.round(max)}℃</strong></div>
+        </div>
+        <div class="reading">
+          ${makeReading(max, humidity || 0, pressureChange, moon)}
+        </div>
+      `;
+    }
+
+    async function loadWeather() {
+      weatherCard.innerHTML = "<div>空を読んでいるところ…</div>";
+
+      const url = new URL("https://api.open-meteo.com/v1/forecast");
+      url.search = new URLSearchParams({
+        latitude: SENDAI.latitude,
+        longitude: SENDAI.longitude,
+        hourly: "relative_humidity_2m,surface_pressure",
+        daily: "weather_code,temperature_2m_max,temperature_2m_min",
+        timezone: "Asia/Tokyo",
+        past_days: "1",
+        forecast_days: "2"
+      });
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("weather fetch failed");
+
+        weatherData = await response.json();
+        renderWeather();
+      } catch (error) {
+        weatherCard.innerHTML = `
+          <p class="error">
+            天気データを読み込めなかった。電波を確認して、ページを更新してみて。
+          </p>
+        `;
+      }
+    }
+
+    document.querySelectorAll(".tab").forEach(button => {
+      button.addEventListener("click", () => {
+        selectedOffset = Number(button.dataset.offset);
+
+        document.querySelectorAll(".tab").forEach(tab => {
+          tab.classList.toggle("active", tab === button);
+        });
+
+        saveStatus.textContent = "";
+        renderWeather();
+        loadRecord();
+      });
+    });
+
+    document.getElementById("saveButton").addEventListener("click", saveRecord);
+
+    loadWeather();
+    loadRecord();
+  </script>
+</body>
+</html>
